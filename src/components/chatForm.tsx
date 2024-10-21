@@ -4,17 +4,27 @@ import { useState } from "react";
 
 const ChatForm = () => {
   const [resultado, setResultado] = useState(""); // Estado para el resultado
+  const [allMessages, setAllMessages] = useState([
+    { role: "system", content: "Eres un asistente útil que ayuda con X." },
+  ]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const message = new FormData(e.target as HTMLFormElement).get("message");
+
+    const updatedMessages = [
+      ...allMessages,
+      { role: "user", content: message },
+    ];
+
+    setAllMessages(updatedMessages);
 
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ message: message }),
+      body: JSON.stringify({ allMessages: updatedMessages }),
     });
     const reader = response.body!.getReader();
     const decoder = new TextDecoder();
@@ -29,6 +39,11 @@ const ChatForm = () => {
 
       // Aquí actualizamos el estado resultado, concatenando el nuevo chunk
       setResultado((prevResultado) => prevResultado + chunk);
+
+      setAllMessages((prevMessages) => [
+        ...prevMessages,
+        { role: "assistant", content: chunk },
+      ]);
 
       // También puedes imprimir en consola lo que se va recibiendo
       console.log("Streamed data:", chunk);

@@ -15,10 +15,7 @@ export async function POST(request: Request) {
   // Crear un stream con OpenAI
   const stream = await openai.chat.completions.create({
     model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: "You are a helpful assistant." },
-      { role: "user", content: body.message }, // Asegúrate de que body tenga un campo 'message'
-    ],
+    messages: body.allMessages,
     stream: true, // Habilitar el streaming
   });
 
