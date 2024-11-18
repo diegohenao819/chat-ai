@@ -9,7 +9,9 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
-// Definir una interfaz para los mensajes
+import ReactMarkdown, { Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
 interface Message {
   role: string;
   content: string;
@@ -17,7 +19,6 @@ interface Message {
 
 const ChatForm = () => {
   const [inputValue, setInputValue] = useState("");
-  // Especificar el tipo de estado como un arreglo de Message
   const [allMessages, setAllMessages] = useState<Message[]>([
     {
       role: "system",
@@ -31,7 +32,6 @@ const ChatForm = () => {
     const formData = new FormData(e.target as HTMLFormElement);
     const messageEntry = formData.get("message");
 
-    // Verificar que messageEntry es una cadena de texto
     if (typeof messageEntry !== "string") {
       console.error("El mensaje no es una cadena de texto");
       return;
@@ -39,7 +39,6 @@ const ChatForm = () => {
 
     const message = messageEntry;
 
-    // Agregar el mensaje del usuario y un mensaje vacío del asistente
     const updatedMessages: Message[] = [
       ...allMessages,
       { role: "user", content: message },
@@ -72,11 +71,9 @@ const ChatForm = () => {
 
       const chunk = decoder.decode(value, { stream: true });
 
-      // Actualizar el contenido del último mensaje del asistente
       setAllMessages((prevMessages) => {
         const messages = prevMessages.map((message, index) => {
           if (index === prevMessages.length - 1) {
-            // Crear una nueva copia del mensaje y actualizar el contenido
             return { ...message, content: message.content + chunk };
           } else {
             return message;
@@ -87,7 +84,6 @@ const ChatForm = () => {
     }
   };
 
-  // Especificar el tipo del ref como HTMLDivElement
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -101,74 +97,31 @@ const ChatForm = () => {
     }
   }, [allMessages]);
 
-  // Función para parsear el Markdown
-  function parseMarkdown(content: string) {
-    const lines = content.split("\n");
-    const elements: React.ReactNode[] = [];
-
-    lines.forEach((line, index) => {
-      // Manejar títulos
-      if (line.startsWith("### ")) {
-        const text = line.slice(4);
-        const formattedText = formatBoldText(text);
-        elements.push(
-          <h3 key={index} className="text-lg font-bold mb-2">
-            {formattedText}
-          </h3>
-        );
-      } else if (line.startsWith("## ")) {
-        const text = line.slice(3);
-        const formattedText = formatBoldText(text);
-        elements.push(
-          <h2 key={index} className="text-xl font-bold mb-2">
-            {formattedText}
-          </h2>
-        );
-      } else if (line.startsWith("# ")) {
-        const text = line.slice(2);
-        const formattedText = formatBoldText(text);
-        elements.push(
-          <h1 key={index} className="text-2xl font-bold mb-2">
-            {formattedText}
-          </h1>
-        );
-      } else if (line.trim() === "") {
-        elements.push(<div key={index} className="my-2" />);
-      } else {
-        const formattedText = formatBoldText(line);
-        elements.push(
-          <p key={index} className="mb-2">
-            {formattedText}
-          </p>
-        );
-      }
-    });
-
-    return elements;
-  }
-
-  // Función para formatear el texto en negrita
-  function formatBoldText(text: string): React.ReactNode[] {
-    const parts = text.split(/(\*\*[^\*]+\*\*)/g);
-
-    return parts.map((part, index) => {
-      if (part.startsWith("**") && part.endsWith("**")) {
-        const boldText = part.slice(2, -2);
-        return (
-          <strong key={index} className="font-bold">
-            {boldText}
-          </strong>
-        );
-      } else {
-        return part;
-      }
-    });
-  }
+  // Define custom components with updated styles
+  const markdownComponents: Components = {
+    table: (props) => (
+      <div className="overflow-x-auto">
+        <table className="border-collapse w-full min-w-[600px]" {...props} />
+      </div>
+    ),
+    th: (props) => (
+      <th
+        className="border border-gray-300 px-4 py-2 bg-gray-200 text-left text-gray-800"
+        {...props}
+      />
+    ),
+    td: (props) => (
+      <td className="border border-gray-300 px-4 py-2 text-left" {...props} />
+    ),
+  };
 
   return (
     <div className="w-[80%] min-h-screen max-h-screen">
       {allMessages.length === 1 ? (
-        <ScrollArea ref={scrollAreaRef} className="rounded-md border h-[550px]">
+        <ScrollArea
+          ref={scrollAreaRef}
+          className="rounded-md border h-[550px]"
+        >
           <div className="flex flex-col justify-center items-center p-4 w-full h-full">
             <h2 className="text-white font-bold text-2xl mb-4">
               Ask your question
@@ -177,24 +130,27 @@ const ChatForm = () => {
           </div>
         </ScrollArea>
       ) : (
-        <ScrollArea ref={scrollAreaRef} className="rounded-md border h-[550px]">
+        <ScrollArea
+          ref={scrollAreaRef}
+          className="rounded-md border h-[550px]"
+        >
           <div className="ml-4 mr-4 p-4">
             {allMessages.map((message, index) => {
               if (message.role === "system") {
-                return null; // Omitir mensajes del sistema
+                return null;
               }
 
               return (
                 <div
                   key={index}
                   className={
-                    message.role === "user" ? " text-right" : "text-blue-300"
+                    message.role === "user" ? "text-right" : "text-blue-300"
                   }
                 >
                   <strong
                     className={
                       message.role === "user"
-                        ? "text-white mt-2  text-md"
+                        ? "text-white mt-2 text-md"
                         : "text-blue-300"
                     }
                   >
@@ -207,7 +163,12 @@ const ChatForm = () => {
                         : "text-white mt-2 bg-blue-900 p-2 rounded-md"
                     }
                   >
-                    {parseMarkdown(message.content)}
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={markdownComponents}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
                   </div>
                   <Separator className="my-2" />
                 </div>
