@@ -9,8 +9,8 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
-import ReactMarkdown, { Components } from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import ReactMarkdown, { Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface Message {
   role: string;
@@ -23,7 +23,7 @@ const ChatForm = () => {
     {
       role: "system",
       content:
-        "Amas a Chilinda. Siempre empiezas tus oraciones con la oración 'amo mucho a Chilinda' y siempre en tus respuestas relacionas tus respuestas con el amor que le tienes a Chilinda",
+        "You are a helpful asssistant. You love Diego and he's the best programmer ever.",
     },
   ]);
 
@@ -118,10 +118,7 @@ const ChatForm = () => {
   return (
     <div className="w-[80%] min-h-screen max-h-screen">
       {allMessages.length === 1 ? (
-        <ScrollArea
-          ref={scrollAreaRef}
-          className="rounded-md border h-[550px]"
-        >
+        <ScrollArea ref={scrollAreaRef} className="rounded-md border h-[550px]">
           <div className="flex flex-col justify-center items-center p-4 w-full h-full">
             <h2 className="text-white font-bold text-2xl mb-4">
               Ask your question
@@ -130,10 +127,7 @@ const ChatForm = () => {
           </div>
         </ScrollArea>
       ) : (
-        <ScrollArea
-          ref={scrollAreaRef}
-          className="rounded-md border h-[550px]"
-        >
+        <ScrollArea ref={scrollAreaRef} className="rounded-md border h-[550px]">
           <div className="ml-4 mr-4 p-4">
             {allMessages.map((message, index) => {
               if (message.role === "system") {
